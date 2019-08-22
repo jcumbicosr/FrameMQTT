@@ -24,7 +24,11 @@
 
 #include "FrameMQTT.h"
 
-//version 2.0.0
+//version 2.1.0
+
+const char* const alphanum ="0123456789"
+"ABCDEFGHIJKLMNOPQRSTUVWXYZ"
+"abcdefghijklmnopqrstuvwxyz";
 
 /* - - - - - - - CONSTRUCTORS - - - - - - - */
 
@@ -39,6 +43,11 @@ FrameMQTT::FrameMQTT() {
 
 /* - - - - - - CONNECT FUNCTIONS - - - - - - */
 
+void FrameMQTT::conectar() 
+{
+	return conectar(NULL, NULL);
+}
+
 void FrameMQTT::conectar( const char *id) 
 {
 	return conectar(id, NULL, NULL);
@@ -47,9 +56,6 @@ void FrameMQTT::conectar( const char *id)
 void FrameMQTT::conectar( const char *user, const char *key) 
 {
 	char clientID[9];
-	const char* const alphanum ="0123456789"
-	"ABCDEFGHIJKLMNOPQRSTUVWXYZ"
-	"abcdefghijklmnopqrstuvwxyz";
 
      
 	// Generate ClientID
@@ -58,7 +64,7 @@ void FrameMQTT::conectar( const char *user, const char *key)
 	}
 	clientID[8]='\0';
 	
-	return conectar(clientID);
+	return conectar(clientID, user, key);
 }
 
 void FrameMQTT::conectar(const char *id, const char *user, const char *key) 
@@ -174,56 +180,9 @@ void FrameMQTT::conectar(const char *id, const char *user, const char *key)
 
 }
 
-void FrameMQTT::pub_ThingSpeak(char *channel, char *apikey, char *body){
+void FrameMQTT::pub_ThingSpeak(const char *channel, const char *apikey, const char *body){
 	return pub_ThingSpeak(channel, apikey, (uint8_t*)body, strlen(body));
-/*	
-	uint8_t i = 0;
-	uint8_t  topic_length = 0;
-	uint8_t  body_length  = strlen( body );
-	uint8_t total_length = 0; //uint16_t
-	uint8_t x = 0;
-	char topic[50];
-	
-	// init buffer
-	memset( buffer, 0x00, sizeof(buffer) );
-	// init counter
-	length=0;
-	
-	snprintf(topic, sizeof(topic),"channels/%s/publish/%s", channel, apikey);
-	topic_length = strlen( topic );
-	
-	total_length = 2 + topic_length + body_length;
-	
-	buffer[0] = 48;
-	x = total_length/128;
-	if (x > 0){
-		length++;
-		buffer[length] = (total_length % 128) | 0x80;
-		length++;
-		buffer[length] = x;
-	}else{
-		length++;
-		buffer[length] = total_length;
-	}
-	
-	length++;
-	buffer[length] = 0;
-	length++;
-	buffer[length] = topic_length;
-	length++;
-	
-	//topic
-	for (i = 0; i < topic_length ; i++){
-		buffer[length] = topic[i];
-		length++;
-	}
-	
-	//body
-	for (i = 0; i < body_length ; i++){
-		buffer[length] = body[i];
-		length++;
-	}
-*/
+
 }
 
 void FrameMQTT::pub_ThingSpeak(char *channel, char *apikey, uint8_t *body, uint16_t len)
@@ -335,6 +294,104 @@ void FrameMQTT::desconectar(void)
 	length = 2;
 
 }
+
+void FrameMQTT::suscribir(const char* topic){
+	return suscribir((uint8_t*)topic, strlen(topic), 0);
+}
+
+void FrameMQTT::suscribir(const char* topic, uint8_t qos){
+	return suscribir((uint8_t*)topic, strlen(topic), qos);
+}
+
+void FrameMQTT::suscribir(const uint8_t* topic, uint8_t len, uint8_t qos){
+	uint8_t x=0;
+	uint8_t len_topic = strlen(topic);
+	//2 header + 2 len Topic + topic + 1 Requested QoS
+	uint8_t	len_total = 5 + len_topic;
+	
+	// init buffer
+	memset( buffer, 0x00, sizeof(buffer) );
+	// init counter
+	length=0;
+	
+	if(qos > 1)
+		return;
+	
+	buffer[length] = 0x82; //1000 0010
+	length++;
+	//remaining length
+	buffer[length] = len_total;
+	length++;
+	//Packet Identifier
+	buffer[length] = 0;
+	length++;
+	buffer[length] = 1;
+	length++;
+	//len topic
+	buffer[length] = 0;
+	length++;
+	buffer[length] = len_topic;
+	length++;
+	//topic
+	for (x = 0; x < len_topic ; x++){
+		buffer[length] = topic[x];
+		length++;
+	}
+	
+	//nivel qos
+	buffer[length] = qos;
+	length++;
+	
+}
+
+void FrameMQTT::desSuscribir(const char* topic){
+	uint8_t x=0;
+	uint8_t len_topic = strlen(topic);
+	// 2 header + 2 len Topic + topic
+	uint8_t	len_total = 4 + len_topic;
+	
+	// init buffer
+	memset( buffer, 0x00, sizeof(buffer) );
+	// init counter
+	length=0;
+	
+	buffer[length] = 0xA2;  // 1010 0010
+	length++;
+	// remaining length
+	buffer[length] = len_total;
+	length++;
+	// Packet Identifier
+	buffer[length] = 0;
+	length++;
+	buffer[length] = 1;
+	length++;
+	// len topic
+	buffer[length] = 0;
+	length++;
+	buffer[length] = len_topic;
+	length++;
+	//topic
+	for (x = 0; x < len_topic ; x++){
+		buffer[length] = topic[x];
+		length++;
+	}
+	
+}
+
+void FrameMQTT::ping(){
+	// init buffer
+	memset( buffer, 0x00, sizeof(buffer) );
+	// init counter
+	length=0;
+	
+	buffer[length] = 0xC0;  // 1100 0000
+	length++;
+	// remaining length
+	buffer[length] = 0;
+	length++;
+}
+
+
 /* 
 void FrameMQTT::showMQTT(void) 
 {

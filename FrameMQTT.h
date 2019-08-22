@@ -74,19 +74,31 @@ public:
 	uint8_t  buffer[MQTT_MAX_PACKET_SIZE];
 	uint16_t length;
 	
+	void conectar();
+	
 	void conectar( const char *id);
 	
 	void conectar( const char *user, const char *key);
 	
 	void conectar( const char *id, const char *user, const char *key);
 	
-	void pub_ThingSpeak(char *channel, char *apikey, char *body);
+	void pub_ThingSpeak(const char *channel, const char *apikey, const char *body);
 	
-	void pub_ThingSpeak(char *channel, char *apikey, uint8_t *body, uint16_t len);
+	void pub_ThingSpeak(const char *channel, const char *apikey, const uint8_t *body, uint16_t len);
 	
 	void publicar(const char* topic, const char* body);
 	
 	void desconectar(void);
+	
+	void suscribir(const char* topic);
+	
+	void suscribir(const char* topic, uint8_t qos);
+	
+	void suscribir(const uint8_t* topic, uint8_t len, uint8_t qos);
+	
+	void desSuscribir(const char* topic);
+	
+	void ping();
 	
 	//void showMQTT(void);
  
