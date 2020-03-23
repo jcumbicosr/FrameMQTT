@@ -94,7 +94,7 @@ public:
 	
 	void suscribir(const char* topic, uint8_t qos);
 	
-	void suscribir(const uint8_t* topic, uint8_t len, uint8_t qos);
+	void suscribir( uint8_t* topic, uint8_t len, uint8_t qos);
 	
 	void desSuscribir(const char* topic);
 	

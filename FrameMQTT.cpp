@@ -24,7 +24,7 @@
 
 #include "FrameMQTT.h"
 
-//version 2.1.0
+//version 2.1.1
 
 const char* const alphanum ="0123456789"
 "ABCDEFGHIJKLMNOPQRSTUVWXYZ"
@@ -60,7 +60,7 @@ void FrameMQTT::conectar( const char *user, const char *key)
      
 	// Generate ClientID
 	for (int i = 0; i < 8; i++) {
-		clientID[i] = alphanum[random(51)];
+		clientID[i] = alphanum[random(62)];
 	}
 	clientID[8]='\0';
 	
@@ -185,7 +185,7 @@ void FrameMQTT::pub_ThingSpeak(const char *channel, const char *apikey, const ch
 
 }
 
-void FrameMQTT::pub_ThingSpeak(char *channel, char *apikey, uint8_t *body, uint16_t len)
+void FrameMQTT::pub_ThingSpeak(const char *channel, const char *apikey, const uint8_t *body, uint16_t len)
 {
 	
 	uint8_t i = 0;
@@ -303,11 +303,10 @@ void FrameMQTT::suscribir(const char* topic, uint8_t qos){
 	return suscribir((uint8_t*)topic, strlen(topic), qos);
 }
 
-void FrameMQTT::suscribir(const uint8_t* topic, uint8_t len, uint8_t qos){
-	uint8_t x=0;
-	uint8_t len_topic = strlen(topic);
+void FrameMQTT::suscribir(uint8_t* topic, uint8_t len, uint8_t qos){
+	uint8_t x = 0;
 	//2 header + 2 len Topic + topic + 1 Requested QoS
-	uint8_t	len_total = 5 + len_topic;
+	uint8_t	len_total = 5 + len;
 	
 	// init buffer
 	memset( buffer, 0x00, sizeof(buffer) );
@@ -330,10 +329,10 @@ void FrameMQTT::suscribir(const uint8_t* topic, uint8_t len, uint8_t qos){
 	//len topic
 	buffer[length] = 0;
 	length++;
-	buffer[length] = len_topic;
+	buffer[length] = len;
 	length++;
 	//topic
-	for (x = 0; x < len_topic ; x++){
+	for (x = 0; x < len ; x++){
 		buffer[length] = topic[x];
 		length++;
 	}
