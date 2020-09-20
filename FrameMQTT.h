@@ -32,28 +32,28 @@
 
 
 /** DEFINE KEEP ALIVE VALUE **/
-#define MQTT_KEEPALIVE    300    // keepAlive interval in Seconds
+#define MQTT_KEEPALIVE    (uint16_t)300    // keepAlive interval in Seconds
 
+/** DEFINED VALUES - MESSAGE TYPE **/
+#define MQTTCONNECT     1 << 4  // Client request to connect to Server
+#define MQTTCONNACK     2 << 4  // Connect Acknowledgment
+#define MQTTPUBLISH     3 << 4  // Publish message
+#define MQTTPUBACK      4 << 4  // Publish Acknowledgment
+#define MQTTPUBREC      5 << 4  // Publish Received (assured delivery part 1)
+#define MQTTPUBREL      6 << 4  // Publish Release (assured delivery part 2)
+#define MQTTPUBCOMP     7 << 4  // Publish Complete (assured delivery part 3)
+#define MQTTSUBSCRIBE   8 << 4  // Client Subscribe request
+#define MQTTSUBACK      9 << 4  // Subscribe Acknowledgment
+#define MQTTUNSUBSCRIBE 10 << 4 // Client Unsubscribe request
+#define MQTTUNSUBACK    11 << 4 // Unsubscribe Acknowledgment
+#define MQTTPINGREQ     12 << 4 // PING Request
+#define MQTTPINGRESP    13 << 4 // PING Response
+#define MQTTDISCONNECT  14 << 4 // Client is Disconnecting
+#define MQTTReserved    15 << 4 // Reserved
 
-/** DEFINED VALUES - MESSAGE TYPE 
-#define MQTT_Reserved     0  // Reserved
-#define MQTT_CONNECT      16  // Client request to connect to Server
-#define MQTT_CONNACK      32  // Connect Acknowledgment
-#define MQTT_PUBLISH      48  // Publish message
-#define MQTT_PUBACK       4 << 4  // Publish Acknowledgment
-#define MQTT_PUBREC       5 << 4  // Publish Received (assured delivery part 1)
-#define MQTT_PUBREL       6 << 4  // Publish Release (assured delivery part 2)
-#define MQTT_PUBCOMP      7 << 4  // Publish Complete (assured delivery part 3)
-#define MQTT_SUBSCRIBE    8 << 4  // Client Subscribe request
-#define MQTT_SUBACK       9 << 4  // Subscribe Acknowledgment
-#define MQTT_UNSUBSCRIBE  10 << 4  // Client Unsubscribe request
-#define MQTT_UNSUBACK     11 << 4  // Unsubscribe Acknowledgment
-#define MQTT_PINGREQ      12 << 4  // PING Request
-#define MQTT_PINGRESP     13 << 4  // PING Response
-#define MQTT_DISCONNECT   224  // Client is Disconnecting
-#define MQTT_Reserved     15 << 4  // Reserved
-
-**/
+#define MQTTQOS0_HEADER_MASK        (0 << 1)
+#define MQTTQOS1_HEADER_MASK        (1 << 1)
+#define MQTTQOS2_HEADER_MASK        (2 << 1)
 
 /** DEFINED VALUES - QoS 
 #define MQTT_QOS0    0 << 1    // At most once (Fire and Forget)
@@ -80,7 +80,9 @@ public:
 	
 	void conectar( const char *user, const char *key);
 	
-	void conectar( const char *id, const char *user, const char *key);
+	void conectar( const char *user, const char *key, uint16_t keepalive);
+	
+	void conectar( const char *id, const char *user, const char *key, uint16_t keepalive);
 	
 	void pub_ThingSpeak(const char *channel, const char *apikey, const char *body);
 	

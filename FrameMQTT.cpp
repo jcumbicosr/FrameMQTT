@@ -24,7 +24,7 @@
 
 #include "FrameMQTT.h"
 
-//version 2.1.1
+//version 2.1.2
 
 const char* const alphanum ="0123456789"
 "ABCDEFGHIJKLMNOPQRSTUVWXYZ"
@@ -53,7 +53,12 @@ void FrameMQTT::conectar( const char *id)
 	return conectar(id, NULL, NULL);
 }
 
-void FrameMQTT::conectar( const char *user, const char *key) 
+void FrameMQTT::conectar( const char *user, const char *key )
+{
+	return conectar(user, key, MQTT_KEEPALIVE);
+}
+
+void FrameMQTT::conectar( const char *user, const char *key, uint16_t keepalive) 
 {
 	char clientID[9];
 
@@ -64,10 +69,10 @@ void FrameMQTT::conectar( const char *user, const char *key)
 	}
 	clientID[8]='\0';
 	
-	return conectar(clientID, user, key);
+	return conectar(clientID, user, key, keepalive);
 }
 
-void FrameMQTT::conectar(const char *id, const char *user, const char *key) 
+void FrameMQTT::conectar(const char *id, const char *user, const char *key, uint16_t keepalive) 
 {
 	
 	uint8_t i = 0;
@@ -97,7 +102,7 @@ void FrameMQTT::conectar(const char *id, const char *user, const char *key)
 			flags = flags | 0x40;	// bit 6 -> Password flag
 		}
 	}
-	buffer[length] = 16;
+	buffer[length] = MQTTCONNECT;
 	length++;
 	
 	len_total = 12 + id_length + k;		//Longitud total de trama
@@ -132,9 +137,9 @@ void FrameMQTT::conectar(const char *id, const char *user, const char *key)
 	length++;
 	buffer[length] = flags;		//Connect flags
 	length++;
-	buffer[length] = ((MQTT_KEEPALIVE) >> 8);
+	buffer[length] = ((keepalive) >> 8);
 	length++;
-	buffer[length] = ((MQTT_KEEPALIVE) & 0xFF);
+	buffer[length] = ((keepalive) & 0xFF);
 	length++;
 	
 	buffer[length] = 0;
@@ -204,7 +209,7 @@ void FrameMQTT::pub_ThingSpeak(const char *channel, const char *apikey, const ui
 	
 	total_length = 2 + topic_length + len;
 	
-	buffer[0] = 48;
+	buffer[0] = MQTTPUBLISH;
 	x = total_length/128;
 	if (x > 0){
 		length++;
@@ -247,7 +252,7 @@ void FrameMQTT::publicar(const char* topic, const char* body)
 	// init counter
 	length=0;
 	
-	buffer[length] = 48;
+	buffer[length] = MQTTPUBLISH;
 	length++;
 	x = len_total/128;
 	if (x > 0)
@@ -289,7 +294,7 @@ void FrameMQTT::desconectar(void)
 	// init counter
 	length=0;
 	
-	buffer[0] = 0xE0;
+	buffer[0] = MQTTDISCONNECT;
 	buffer[1] = 0x00;
 	length = 2;
 
@@ -316,7 +321,7 @@ void FrameMQTT::suscribir(uint8_t* topic, uint8_t len, uint8_t qos){
 	if(qos > 1)
 		return;
 	
-	buffer[length] = 0x82; //1000 0010
+	buffer[length] = MQTTSUBSCRIBE | MQTTQOS1_HEADER_MASK; //1000 0010
 	length++;
 	//remaining length
 	buffer[length] = len_total;
@@ -354,7 +359,7 @@ void FrameMQTT::desSuscribir(const char* topic){
 	// init counter
 	length=0;
 	
-	buffer[length] = 0xA2;  // 1010 0010
+	buffer[length] = MQTTUNSUBSCRIBE | MQTTQOS1_HEADER_MASK;  // 1010 0010
 	length++;
 	// remaining length
 	buffer[length] = len_total;
@@ -383,11 +388,9 @@ void FrameMQTT::ping(){
 	// init counter
 	length=0;
 	
-	buffer[length] = 0xC0;  // 1100 0000
-	length++;
-	// remaining length
-	buffer[length] = 0;
-	length++;
+	buffer[0] = MQTTPINGREQ;	// 1100 0000
+	buffer[1] = 0;				// remaining length
+	length = 2;
 }
 
 
