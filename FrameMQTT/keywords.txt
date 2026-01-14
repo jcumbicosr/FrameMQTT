@@ -1,0 +1,14 @@
+# MQTT Keywords #
+
+MQTT	KEYWORD3
+FrameMQTT	KEYWORD2
+conectar	KEYWORD2
+publicar	KEYWORD2
+desconectar	KEYWORD2
+showMQTT	KEYWORD2
+pub_ThingSpeak	KEYWORD2
+buffer	KEYWORD2
+length	KEYWORD2
+suscribir	KEYWORD2
+desSuscribir	KEYWORD2
+ping		KEYWORD2
